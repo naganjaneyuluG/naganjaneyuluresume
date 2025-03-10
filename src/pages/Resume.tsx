@@ -16,7 +16,7 @@ const Resume = () => {
         <div className="container-tight">
           <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">John Doe</h1>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">Naganjaneyulu Gudditi</h1>
               <p className="text-xl text-foreground/70 mb-4">Senior DevOps Engineer</p>
               
               <div className="flex flex-wrap gap-4">

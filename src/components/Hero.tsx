@@ -26,8 +26,11 @@ const Hero = () => {
               DevOps Engineer
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-              Cloud & Infrastructure <span className="text-primary">Expert</span>
+              Naganjaneyulu Gudditi
             </h1>
+            <p className="text-xl md:text-2xl text-primary mt-2">
+              Cloud & Infrastructure Expert
+            </p>
           </div>
           
           <p className="text-lg md:text-xl text-foreground/80 max-w-xl">
