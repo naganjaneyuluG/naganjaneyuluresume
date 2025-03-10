@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowDown, Moon, Sun } from "lucide-react";
+import { ArrowDown, Moon, Sun, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
 
@@ -48,7 +48,15 @@ const Hero = () => {
             Specializing in AWS and GCP infrastructure architecture, automation, and CI/CD pipelines that scale with your needs.
           </p>
           
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 items-center">
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="rounded-full"
+            >
+              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
             <Button asChild size="lg" className="rounded-full">
               <Link to="/contact">Schedule a Call</Link>
             </Button>
@@ -92,11 +100,11 @@ const Hero = () => {
         </div>
         
         <div className="relative">
-          <div className="relative z-10 animate-fade-in rounded-2xl overflow-hidden shadow-xl">
+          <div className="relative z-10 animate-fade-in rounded-2xl overflow-hidden shadow-xl aspect-[4/3]">
             <img
-              src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-4.0.3&auto=format&fit=crop&w=1740&q=80"
-              alt="DevOps Engineer working on cloud infrastructure"
-              className="w-full h-auto object-cover"
+              src="/profile-image.jpg" // You'll need to add your image to the public folder
+              alt="Naganjaneyulu Gudditi - DevOps Engineer"
+              className="w-full h-full object-cover"
             />
           </div>
           <div 
