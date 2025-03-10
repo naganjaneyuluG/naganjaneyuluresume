@@ -7,8 +7,18 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 const Index = () => {
+  useEffect(() => {
+    // Show welcome message when the page loads
+    toast.success("Welcome to Naganjaneyulu Gudditi's Portfolio", {
+      description: "Explore my skills, experience, and cloud solutions expertise",
+      duration: 5000,
+    });
+  }, []);
+
   return (
     <div className="min-h-screen page-transition">
       <NavBar />
