@@ -4,9 +4,8 @@
  */
 export const env = {
   databaseUrl: import.meta.env.VITE_DATABASE_URL,
-  authSecret: import.meta.env.VITE_AUTH_SECRET,
-  authUrl: import.meta.env.VITE_AUTH_URL,
-  apiUrl: import.meta.env.VITE_API_URL,
+  authSecret: import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_AUTH_SECRET,
+  apiUrl: import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_API_URL,
   storageUrl: import.meta.env.VITE_STORAGE_URL,
 };
 
@@ -16,11 +15,8 @@ export const env = {
  */
 export const checkEnvVariables = (): boolean => {
   const requiredEnvVars = [
-    'databaseUrl',
-    'authSecret',
-    'authUrl',
     'apiUrl',
-    'storageUrl'
+    'authSecret',
   ];
 
   const missingEnvVars = requiredEnvVars.filter(key => !env[key as keyof typeof env]);

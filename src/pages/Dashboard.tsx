@@ -14,29 +14,68 @@ import ResumeManager from "@/components/dashboard/ResumeManager";
 import MeetingScheduler from "@/components/dashboard/MeetingScheduler";
 import EmailSettings from "@/components/dashboard/EmailSettings";
 import PasswordChange from "@/components/dashboard/PasswordChange";
+import { supabase } from "@/lib/supabase";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // Check if user is logged in
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    if (!isLoggedIn) {
-      toast.error("Unauthorized access", {
-        description: "You must be logged in to view this page.",
-      });
-      navigate("/login");
-    } else {
-      setIsLoading(false);
-    }
+    const checkAuth = async () => {
+      try {
+        // Check Supabase session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) throw error;
+        
+        if (!session) {
+          // Fallback to localStorage for demo authentication
+          const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+          
+          if (!isLoggedIn) {
+            throw new Error("Not authenticated");
+          }
+          
+          // Demo user from localStorage
+          const storedUser = localStorage.getItem("user");
+          if (storedUser) {
+            setUser(JSON.parse(storedUser));
+          }
+        } else {
+          // Set authenticated Supabase user
+          setUser(session.user);
+        }
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Authentication error:", error);
+        toast.error("Unauthorized access", {
+          description: "You must be logged in to view this page.",
+        });
+        navigate("/login");
+      }
+    };
+    
+    checkAuth();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("user");
-    toast.success("Logged out successfully");
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      // Supabase sign out
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // Also clear localStorage (for demo fallback)
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("user");
+      
+      toast.success("Logged out successfully");
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Error signing out");
+    }
   };
 
   if (isLoading) {
@@ -48,20 +87,27 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <NavBar />
       
       <main className="flex-grow pt-24 pb-16 px-4">
         <div className="container-tight">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <div>
+              <h1 className="text-3xl font-bold">Dashboard</h1>
+              {user && (
+                <p className="text-muted-foreground">
+                  Welcome, {user.user_metadata?.full_name || user.name || user.email}
+                </p>
+              )}
+            </div>
             <Button variant="outline" onClick={handleLogout} className="flex items-center gap-2">
               <LogOut className="h-4 w-4" />
               Logout
             </Button>
           </div>
           
-          <Tabs defaultValue="experience">
+          <Tabs defaultValue="experience" className="space-y-6">
             <TabsList className="grid w-full grid-cols-7 mb-8">
               <TabsTrigger value="experience">Work Experience</TabsTrigger>
               <TabsTrigger value="skills">Skills</TabsTrigger>
@@ -73,31 +119,31 @@ const Dashboard = () => {
             </TabsList>
             
             <TabsContent value="experience" className="space-y-4">
-              <ExperienceEditor />
+              <ExperienceEditor userId={user?.id} />
             </TabsContent>
             
             <TabsContent value="skills" className="space-y-4">
-              <SkillsEditor />
+              <SkillsEditor userId={user?.id} />
             </TabsContent>
 
             <TabsContent value="appearance" className="space-y-4">
-              <AppearanceSettings />
+              <AppearanceSettings userId={user?.id} />
             </TabsContent>
 
             <TabsContent value="resume" className="space-y-4">
-              <ResumeManager />
+              <ResumeManager userId={user?.id} />
             </TabsContent>
 
             <TabsContent value="meetings" className="space-y-4">
-              <MeetingScheduler />
+              <MeetingScheduler userId={user?.id} />
             </TabsContent>
 
             <TabsContent value="email" className="space-y-4">
-              <EmailSettings />
+              <EmailSettings userId={user?.id} />
             </TabsContent>
 
             <TabsContent value="password" className="space-y-4">
-              <PasswordChange />
+              <PasswordChange userId={user?.id} />
             </TabsContent>
           </Tabs>
         </div>

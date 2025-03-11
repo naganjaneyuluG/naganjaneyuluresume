@@ -10,60 +10,62 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 
-const Login = () => {
+const Register = () => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (password !== confirmPassword) {
+      toast.error("Passwords don't match");
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      // For demo/development purposes - use demo credentials if in dev mode
-      const useTestAuth = !import.meta.env.PROD && email === "admin@example.com";
-      
-      if (useTestAuth) {
-        // Demo mode - use localStorage for demo credentials
-        const storedPassword = localStorage.getItem("demoPassword") || "admin123";
-        
-        if (password === storedPassword) {
-          // Set user as logged in for demo
-          localStorage.setItem("isLoggedIn", "true");
-          localStorage.setItem("user", JSON.stringify({ email, name: "Admin" }));
-          
-          toast.success("Demo login successful!", {
-            description: "Welcome to your dashboard."
-          });
-          
-          navigate("/dashboard");
-          return;
-        } else {
-          throw new Error("Invalid demo credentials");
-        }
-      }
-      
-      // Real Supabase authentication
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Register with Supabase
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: name,
+          },
+        },
       });
 
       if (error) throw error;
 
-      localStorage.setItem("isLoggedIn", "true");
-      
-      toast.success("Login successful!", {
-        description: "Welcome to your dashboard."
+      // Create initial profile
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            full_name: name,
+            avatar_url: '',
+            website: '',
+          });
+
+        if (profileError) throw profileError;
+      }
+
+      toast.success("Registration successful!", {
+        description: "Please check your email to confirm your account."
       });
       
-      navigate("/dashboard");
+      navigate("/login");
     } catch (error: any) {
-      console.error("Login error:", error);
-      toast.error("Login failed", {
-        description: error?.message || "Please check your credentials and try again"
+      console.error("Registration error:", error);
+      toast.error("Registration failed", {
+        description: error?.message || "Please try again with different credentials"
       });
     } finally {
       setIsLoading(false);
@@ -78,18 +80,23 @@ const Login = () => {
         <div className="w-full max-w-md">
           <div className="bg-card rounded-lg shadow-lg border p-8">
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold">Welcome Back</h1>
-              <p className="text-muted-foreground mt-2">Sign in to your account</p>
-              <div className="mt-4 p-3 bg-muted/50 rounded-md">
-                <p className="text-sm font-medium">Demo Credentials</p>
-                <p className="text-xs text-muted-foreground">Email: admin@example.com</p>
-                <p className="text-xs text-muted-foreground">
-                  Password: {localStorage.getItem("demoPassword") ? "Changed from default" : "admin123"}
-                </p>
-              </div>
+              <h1 className="text-3xl font-bold">Create an Account</h1>
+              <p className="text-muted-foreground mt-2">Sign up to create your portfolio</p>
             </div>
             
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleRegister} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input 
+                  id="name"
+                  type="text" 
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input 
@@ -103,12 +110,7 @@ const Login = () => {
               </div>
               
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-                    Forgot password?
-                  </Link>
-                </div>
+                <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Input 
                     id="password"
@@ -130,19 +132,31 @@ const Login = () => {
                 </div>
               </div>
               
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input 
+                  id="confirmPassword"
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+              
               <Button 
                 type="submit" 
                 className="w-full" 
                 disabled={isLoading}
               >
-                {isLoading ? "Signing in..." : "Sign in"}
+                {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
               
               <div className="text-center mt-4">
                 <p className="text-sm text-muted-foreground">
-                  Don't have an account?{" "}
-                  <Link to="/register" className="text-primary hover:underline">
-                    Create one
+                  Already have an account?{" "}
+                  <Link to="/login" className="text-primary hover:underline">
+                    Sign in
                   </Link>
                 </p>
               </div>
@@ -156,4 +170,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

@@ -1,69 +1,59 @@
-# Welcome to your Lovable project
 
-## Project info
+# DevOps Portfolio Application with Supabase Backend
 
-**URL**: https://lovable.dev/projects/985acafe-a22e-40c0-976a-77f7dad826af
+This application is a DevOps professional portfolio with a Supabase backend for authentication and data storage.
 
-## How can I edit this code?
+## Environment Setup
 
-There are several ways of editing your application.
+Before deployment, you need to set up the following environment variables:
 
-**Use Lovable**
+```
+VITE_SUPABASE_URL=your-supabase-project-url
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/985acafe-a22e-40c0-976a-77f7dad826af) and start prompting.
+## Database Setup
 
-Changes made via Lovable will be committed automatically to this repo.
+1. Create a new Supabase project at [https://app.supabase.com](https://app.supabase.com)
+2. Use the SQL Editor in the Supabase dashboard to run the schema.sql file located in the supabase directory
+3. This will create all necessary tables and security policies
 
-**Use your preferred IDE**
+## Local Development
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```bash
+# Install dependencies
+npm install
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Skills Categories
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+The application includes the following DevOps skill categories:
 
-**Use GitHub Codespaces**
+- Operating Systems: Red Hat Linux, Amazon Linux, Rocky Linux, Ubuntu, CentOS, Linux
+- Cloud Skills: Amazon Web Services (AWS)
+- Configuration Management: Jenkins, Ansible
+- Monitoring Tools: Grafana, Prometheus, Zabbix, Datadog, New Relic
+- CI/CD: GitHub Actions, Jenkins, Argo CD, CircleCI
+- Version Control Tools: Git, GitHub, GitLab
+- Infrastructure as Code (IAC): Terraform, AWS CDK
+- Scanning & Artifactory: Frog Artifactory, Nexus, Sonar
+- Containerization Tools: Kubernetes-Helm, Docker, Docker Swarm
+- Project Management: Jira, Confluence
+- Scripting: Shell Scripting
+- Databases: MySQL, MariaDB, PostgreSQL, MongoDB
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Features
 
-## What technologies are used for this project?
+- User authentication (login/register)
+- Experience management
+- Skills management
+- Resume management
+- Appearance customization
+- Contact form and meeting scheduler
 
-This project is built with .
+## Deployment
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/985acafe-a22e-40c0-976a-77f7dad826af) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+This application can be deployed to any hosting provider that supports React applications (Vercel, Netlify, etc.). Make sure to set the environment variables on your hosting platform.
