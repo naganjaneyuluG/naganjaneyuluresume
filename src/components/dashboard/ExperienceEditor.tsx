@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Save, Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { Experience } from "@/lib/supabase";
 
 // Initial default experiences
 const defaultExperiences = [
@@ -18,6 +19,9 @@ const defaultExperiences = [
     description: "Leading cloud infrastructure architecture and CI/CD pipeline development for enterprise clients. Reduced deployment time by 70% and achieved 99.99% uptime across all systems.",
     technologies: ["AWS", "Kubernetes", "Terraform", "Jenkins", "Prometheus"],
     highlight: true,
+    user_id: "", // Will be populated with the actual user ID when needed
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: "2",
@@ -47,27 +51,100 @@ interface Experience {
   description: string;
   technologies: string[];
   highlight: boolean;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
 }
 
 const ExperienceEditor = () => {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [editingExperience, setEditingExperience] = useState<Experience | null>(null);
   const [newTechnology, setNewTechnology] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load experiences from localStorage or use defaults
-    const savedExperiences = localStorage.getItem("experiences");
-    if (savedExperiences) {
-      setExperiences(JSON.parse(savedExperiences));
-    } else {
-      setExperiences(defaultExperiences);
-      localStorage.setItem("experiences", JSON.stringify(defaultExperiences));
-    }
+    const fetchUserAndExperiences = async () => {
+      try {
+        // Get the current user session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user?.id) {
+          setUserId(session.user.id);
+          
+          // Fetch user's experiences from Supabase
+          const { data, error } = await supabase
+            .from('experiences')
+            .select('*')
+            .eq('user_id', session.user.id);
+          
+          if (error) throw error;
+          
+          if (data && data.length > 0) {
+            setExperiences(data);
+          } else {
+            // If no experiences exist yet, use defaults but assign the user_id
+            const defaultsWithUserId = defaultExperiences.map(exp => ({
+              ...exp,
+              user_id: session.user.id
+            }));
+            setExperiences(defaultsWithUserId);
+            
+            // Optionally save these defaults to the database
+            // This is commented out as you might not want to automatically create records
+            // await Promise.all(defaultsWithUserId.map(exp => supabase.from('experiences').insert(exp)));
+          }
+        } else {
+          // Fallback to localStorage for development/demo
+          const savedExperiences = localStorage.getItem("experiences");
+          if (savedExperiences) {
+            setExperiences(JSON.parse(savedExperiences));
+          } else {
+            setExperiences(defaultExperiences);
+            localStorage.setItem("experiences", JSON.stringify(defaultExperiences));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching experiences:", error);
+        toast.error("Failed to load experiences");
+        
+        // Fallback to localStorage
+        const savedExperiences = localStorage.getItem("experiences");
+        if (savedExperiences) {
+          setExperiences(JSON.parse(savedExperiences));
+        } else {
+          setExperiences(defaultExperiences);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUserAndExperiences();
   }, []);
 
-  const saveExperiences = (updatedExperiences: Experience[]) => {
-    localStorage.setItem("experiences", JSON.stringify(updatedExperiences));
-    setExperiences(updatedExperiences);
+  const saveExperiences = async (updatedExperiences: Experience[]) => {
+    try {
+      if (userId) {
+        // If we have a userId, we're using Supabase
+        // This is simplified - in a real app you might need more complex logic for updates
+        await supabase.from('experiences').upsert(updatedExperiences);
+      } else {
+        // Fallback to localStorage
+        localStorage.setItem("experiences", JSON.stringify(updatedExperiences));
+      }
+      
+      setExperiences(updatedExperiences);
+    } catch (error) {
+      console.error("Error saving experiences:", error);
+      toast.error("Failed to save experiences");
+      
+      // Always update the local state even if the server save failed
+      setExperiences(updatedExperiences);
+      
+      // Fallback to localStorage
+      localStorage.setItem("experiences", JSON.stringify(updatedExperiences));
+    }
   };
 
   const handleEdit = (experience: Experience) => {
@@ -88,7 +165,10 @@ const ExperienceEditor = () => {
       period: "Start - End",
       description: "Describe your responsibilities and achievements",
       technologies: ["Technology"],
-      highlight: false
+      highlight: false,
+      user_id: "",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
     setEditingExperience(newExperience);
   };
@@ -134,6 +214,14 @@ const ExperienceEditor = () => {
       technologies: editingExperience.technologies.filter(t => t !== tech)
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center p-8">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { MailIcon, Lock, Server, Send, Key } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 interface SMTPSettings {
   host: string;
@@ -34,13 +34,53 @@ const EmailSettings = () => {
   const [settings, setSettings] = useState<SMTPSettings>(defaultSettings);
   const [testEmail, setTestEmail] = useState("");
   const [isTesting, setIsTesting] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load saved settings
-    const savedSettings = localStorage.getItem("smtpSettings");
-    if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
-    }
+    const fetchSettings = async () => {
+      try {
+        // Get current user
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user?.id) {
+          setUserId(session.user.id);
+          
+          // Try to fetch settings from Supabase
+          const { data, error } = await supabase
+            .from('email_settings')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .single();
+          
+          if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+            throw error;
+          }
+          
+          if (data) {
+            setSettings(data.settings);
+          }
+        } else {
+          // Fallback to localStorage for demo/development
+          const savedSettings = localStorage.getItem("smtpSettings");
+          if (savedSettings) {
+            setSettings(JSON.parse(savedSettings));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching email settings:", error);
+        
+        // Fallback to localStorage
+        const savedSettings = localStorage.getItem("smtpSettings");
+        if (savedSettings) {
+          setSettings(JSON.parse(savedSettings));
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchSettings();
   }, []);
 
   const handleSettingChange = (key: keyof SMTPSettings, value: string | boolean) => {
@@ -48,22 +88,6 @@ const EmailSettings = () => {
       ...settings,
       [key]: value
     });
-  };
-
-  const handleSaveSettings = () => {
-    // Validation
-    if (settings.enabled) {
-      const requiredFields = ['host', 'port', 'username', 'password', 'fromEmail', 'fromName'];
-      for (const field of requiredFields) {
-        if (!settings[field as keyof SMTPSettings]) {
-          toast.error(`Please fill in the ${field.replace(/([A-Z])/g, ' $1').toLowerCase()} field`);
-          return;
-        }
-      }
-    }
-    
-    localStorage.setItem("smtpSettings", JSON.stringify(settings));
-    toast.success("Email settings saved successfully");
   };
 
   const handleTestEmail = () => {
@@ -85,6 +109,53 @@ const EmailSettings = () => {
       toast.success(`Test email sent to ${testEmail}`);
     }, 1500);
   };
+
+  const handleSaveSettings = async () => {
+    // Validation
+    if (settings.enabled) {
+      const requiredFields = ['host', 'port', 'username', 'password', 'fromEmail', 'fromName'];
+      for (const field of requiredFields) {
+        if (!settings[field as keyof SMTPSettings]) {
+          toast.error(`Please fill in the ${field.replace(/([A-Z])/g, ' $1').toLowerCase()} field`);
+          return;
+        }
+      }
+    }
+    
+    try {
+      if (userId) {
+        // Save to Supabase
+        const { error } = await supabase
+          .from('email_settings')
+          .upsert({
+            user_id: userId,
+            settings: settings,
+            updated_at: new Date().toISOString()
+          });
+        
+        if (error) throw error;
+      } else {
+        // Fallback to localStorage
+        localStorage.setItem("smtpSettings", JSON.stringify(settings));
+      }
+      
+      toast.success("Email settings saved successfully");
+    } catch (error) {
+      console.error("Error saving email settings:", error);
+      toast.error("Failed to save email settings");
+      
+      // Fallback to localStorage
+      localStorage.setItem("smtpSettings", JSON.stringify(settings));
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center p-8">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

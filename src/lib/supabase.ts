@@ -71,3 +71,20 @@ export type AppearanceSettings = {
   created_at: string;
   updated_at: string;
 };
+
+export type EmailSettings = {
+  id: string;
+  user_id: string;
+  settings: {
+    host: string;
+    port: string;
+    username: string;
+    password: string;
+    fromEmail: string;
+    fromName: string;
+    secure: boolean;
+    enabled: boolean;
+  };
+  created_at: string;
+  updated_at: string;
+};

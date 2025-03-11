@@ -16,6 +16,10 @@ import EmailSettings from "@/components/dashboard/EmailSettings";
 import PasswordChange from "@/components/dashboard/PasswordChange";
 import { supabase } from "@/lib/supabase";
 
+interface DashboardComponentProps {
+  userId: string;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
@@ -119,31 +123,31 @@ const Dashboard = () => {
             </TabsList>
             
             <TabsContent value="experience" className="space-y-4">
-              <ExperienceEditor userId={user?.id} />
+              <ExperienceEditor />
             </TabsContent>
             
             <TabsContent value="skills" className="space-y-4">
-              <SkillsEditor userId={user?.id} />
+              <SkillsEditor />
             </TabsContent>
 
             <TabsContent value="appearance" className="space-y-4">
-              <AppearanceSettings userId={user?.id} />
+              <AppearanceSettings />
             </TabsContent>
 
             <TabsContent value="resume" className="space-y-4">
-              <ResumeManager userId={user?.id} />
+              <ResumeManager />
             </TabsContent>
 
             <TabsContent value="meetings" className="space-y-4">
-              <MeetingScheduler userId={user?.id} />
+              <MeetingScheduler />
             </TabsContent>
 
             <TabsContent value="email" className="space-y-4">
-              <EmailSettings userId={user?.id} />
+              <EmailSettings />
             </TabsContent>
 
             <TabsContent value="password" className="space-y-4">
-              <PasswordChange userId={user?.id} />
+              <PasswordChange />
             </TabsContent>
           </Tabs>
         </div>
