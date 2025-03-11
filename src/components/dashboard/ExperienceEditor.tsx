@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,11 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Save, Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
-import { Experience } from "@/lib/supabase";
+import { supabase, Experience as SupabaseExperience } from "@/lib/supabase";
 
-// Initial default experiences
-const defaultExperiences = [
+// Initial default experiences with all required fields
+const defaultExperiences: SupabaseExperience[] = [
   {
     id: "1",
     title: "Senior DevOps Engineer",
@@ -19,7 +19,7 @@ const defaultExperiences = [
     description: "Leading cloud infrastructure architecture and CI/CD pipeline development for enterprise clients. Reduced deployment time by 70% and achieved 99.99% uptime across all systems.",
     technologies: ["AWS", "Kubernetes", "Terraform", "Jenkins", "Prometheus"],
     highlight: true,
-    user_id: "", // Will be populated with the actual user ID when needed
+    user_id: "",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -31,6 +31,9 @@ const defaultExperiences = [
     description: "Designed and implemented multi-region cloud architecture on GCP. Managed migration of legacy applications to containerized microservices architecture.",
     technologies: ["GCP", "Docker", "Kubernetes", "GitLab CI", "Terraform"],
     highlight: false,
+    user_id: "",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: "3",
@@ -40,25 +43,15 @@ const defaultExperiences = [
     description: "Implemented CI/CD pipelines and automated infrastructure deployment processes. Reduced infrastructure costs by 35% through optimization.",
     technologies: ["AWS", "Docker", "CloudFormation", "Jenkins", "ELK Stack"],
     highlight: false,
+    user_id: "",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
 ];
 
-interface Experience {
-  id: string;
-  title: string;
-  company: string;
-  period: string;
-  description: string;
-  technologies: string[];
-  highlight: boolean;
-  user_id: string;
-  created_at: string;
-  updated_at: string;
-}
-
 const ExperienceEditor = () => {
-  const [experiences, setExperiences] = useState<Experience[]>([]);
-  const [editingExperience, setEditingExperience] = useState<Experience | null>(null);
+  const [experiences, setExperiences] = useState<SupabaseExperience[]>([]);
+  const [editingExperience, setEditingExperience] = useState<SupabaseExperience | null>(null);
   const [newTechnology, setNewTechnology] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -81,7 +74,7 @@ const ExperienceEditor = () => {
           if (error) throw error;
           
           if (data && data.length > 0) {
-            setExperiences(data);
+            setExperiences(data as SupabaseExperience[]);
           } else {
             // If no experiences exist yet, use defaults but assign the user_id
             const defaultsWithUserId = defaultExperiences.map(exp => ({
@@ -98,7 +91,20 @@ const ExperienceEditor = () => {
           // Fallback to localStorage for development/demo
           const savedExperiences = localStorage.getItem("experiences");
           if (savedExperiences) {
-            setExperiences(JSON.parse(savedExperiences));
+            try {
+              const parsed = JSON.parse(savedExperiences);
+              // Ensure that all required fields are present
+              const validExperiences = parsed.map((exp: any) => ({
+                ...exp,
+                user_id: exp.user_id || "",
+                created_at: exp.created_at || new Date().toISOString(),
+                updated_at: exp.updated_at || new Date().toISOString(),
+              }));
+              setExperiences(validExperiences);
+            } catch (e) {
+              console.error("Error parsing experiences from localStorage:", e);
+              setExperiences(defaultExperiences);
+            }
           } else {
             setExperiences(defaultExperiences);
             localStorage.setItem("experiences", JSON.stringify(defaultExperiences));
@@ -111,7 +117,20 @@ const ExperienceEditor = () => {
         // Fallback to localStorage
         const savedExperiences = localStorage.getItem("experiences");
         if (savedExperiences) {
-          setExperiences(JSON.parse(savedExperiences));
+          try {
+            const parsed = JSON.parse(savedExperiences);
+            // Ensure that all required fields are present
+            const validExperiences = parsed.map((exp: any) => ({
+              ...exp,
+              user_id: exp.user_id || "",
+              created_at: exp.created_at || new Date().toISOString(),
+              updated_at: exp.updated_at || new Date().toISOString(),
+            }));
+            setExperiences(validExperiences);
+          } catch (e) {
+            console.error("Error parsing experiences from localStorage:", e);
+            setExperiences(defaultExperiences);
+          }
         } else {
           setExperiences(defaultExperiences);
         }
@@ -123,7 +142,7 @@ const ExperienceEditor = () => {
     fetchUserAndExperiences();
   }, []);
 
-  const saveExperiences = async (updatedExperiences: Experience[]) => {
+  const saveExperiences = async (updatedExperiences: SupabaseExperience[]) => {
     try {
       if (userId) {
         // If we have a userId, we're using Supabase
@@ -147,7 +166,7 @@ const ExperienceEditor = () => {
     }
   };
 
-  const handleEdit = (experience: Experience) => {
+  const handleEdit = (experience: SupabaseExperience) => {
     setEditingExperience({...experience});
   };
 
@@ -158,7 +177,7 @@ const ExperienceEditor = () => {
   };
 
   const handleAddNew = () => {
-    const newExperience: Experience = {
+    const newExperience: SupabaseExperience = {
       id: Date.now().toString(),
       title: "New Position",
       company: "Company Name",
@@ -166,7 +185,7 @@ const ExperienceEditor = () => {
       description: "Describe your responsibilities and achievements",
       technologies: ["Technology"],
       highlight: false,
-      user_id: "",
+      user_id: userId || "",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -181,9 +200,16 @@ const ExperienceEditor = () => {
     
     if (existingIndex >= 0) {
       updatedExperiences = [...experiences];
-      updatedExperiences[existingIndex] = editingExperience;
+      updatedExperiences[existingIndex] = {
+        ...editingExperience,
+        updated_at: new Date().toISOString()
+      };
     } else {
-      updatedExperiences = [...experiences, editingExperience];
+      updatedExperiences = [...experiences, {
+        ...editingExperience,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }];
     }
     
     saveExperiences(updatedExperiences);
