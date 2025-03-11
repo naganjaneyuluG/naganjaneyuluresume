@@ -1,241 +1,258 @@
-
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { FilePdf, Upload, Download, Trash2, FileText } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FileText, Upload, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Resume {
   id: string;
-  title: string;
-  fileName: string;
-  fileData: string;
-  uploadDate: string;
-  isDefault: boolean;
+  name: string;
+  content: string;
 }
 
 const ResumeManager = () => {
   const [resumes, setResumes] = useState<Resume[]>([]);
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [resumeTitle, setResumeTitle] = useState("");
+  const [activeResumeId, setActiveResumeId] = useState<string | null>(null);
+  const [newResumeName, setNewResumeName] = useState("");
+  const [resumeContent, setResumeContent] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    // Load saved resumes
+    // Load resumes from localStorage
     const savedResumes = localStorage.getItem("resumes");
     if (savedResumes) {
       setResumes(JSON.parse(savedResumes));
     }
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (file.type !== 'application/pdf') {
-        toast.error("Please upload a PDF file");
-        return;
+  useEffect(() => {
+    // Set active resume content when activeResumeId changes
+    if (activeResumeId) {
+      const activeResume = resumes.find((resume) => resume.id === activeResumeId);
+      if (activeResume) {
+        setResumeContent(activeResume.content);
       }
-      
-      setResumeFile(file);
-      if (!resumeTitle) {
-        // Set the title to the file name without extension
-        setResumeTitle(file.name.replace(/\.[^/.]+$/, ""));
-      }
+    } else {
+      setResumeContent("");
     }
-  };
+  }, [activeResumeId, resumes]);
 
-  const handleUploadResume = async () => {
-    if (!resumeFile) {
-      toast.error("Please select a PDF file to upload");
-      return;
-    }
-
-    if (!resumeTitle.trim()) {
-      toast.error("Please provide a title for your resume");
-      return;
-    }
-
-    // Convert PDF to base64
-    const reader = new FileReader();
-    reader.readAsDataURL(resumeFile);
-    
-    reader.onloadend = () => {
-      const base64data = reader.result as string;
-      
-      const newResume: Resume = {
-        id: Date.now().toString(),
-        title: resumeTitle,
-        fileName: resumeFile.name,
-        fileData: base64data,
-        uploadDate: new Date().toISOString(),
-        isDefault: resumes.length === 0 // First upload becomes default
-      };
-      
-      const updatedResumes = [...resumes, newResume];
-      setResumes(updatedResumes);
-      localStorage.setItem("resumes", JSON.stringify(updatedResumes));
-      
-      // Reset form
-      setResumeFile(null);
-      setResumeTitle("");
-      
-      toast.success("Resume uploaded successfully");
-    };
-  };
-
-  const handleSetDefault = (id: string) => {
-    const updatedResumes = resumes.map(resume => ({
-      ...resume,
-      isDefault: resume.id === id
-    }));
-    
-    setResumes(updatedResumes);
+  const saveResumes = (updatedResumes: Resume[]) => {
     localStorage.setItem("resumes", JSON.stringify(updatedResumes));
-    toast.success("Default resume updated");
+    setResumes(updatedResumes);
   };
 
-  const handleDownload = (resume: Resume) => {
-    // Create a link element
-    const link = document.createElement('a');
-    link.href = resume.fileData;
-    link.download = resume.fileName;
+  const handleCreateResume = () => {
+    if (!newResumeName.trim()) {
+      toast.error("Resume name cannot be empty");
+      return;
+    }
+
+    const newResume: Resume = {
+      id: Date.now().toString(),
+      name: newResumeName,
+      content: "",
+    };
+
+    saveResumes([...resumes, newResume]);
+    setActiveResumeId(newResume.id);
+    setNewResumeName("");
+    setIsEditing(true);
+    toast.success("Resume created successfully");
+  };
+
+  const handleUpdateResume = () => {
+    if (!activeResumeId) return;
+
+    const updatedResumes = resumes.map((resume) =>
+      resume.id === activeResumeId ? { ...resume, content: resumeContent } : resume
+    );
+
+    saveResumes(updatedResumes);
+    toast.success("Resume updated successfully");
+  };
+
+  const handleDeleteResume = (resumeId: string) => {
+    const updatedResumes = resumes.filter((resume) => resume.id !== resumeId);
+    saveResumes(updatedResumes);
+    setActiveResumeId(null);
+    toast.success("Resume deleted successfully");
+  };
+
+  const handleDownloadResume = () => {
+    if (!activeResumeId) return;
+
+    const activeResume = resumes.find((resume) => resume.id === activeResumeId);
+    if (!activeResume) return;
+
+    const blob = new Blob([activeResume.content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${activeResume.name}.txt`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
-  const handleDelete = (id: string) => {
-    const updatedResumes = resumes.filter(resume => resume.id !== id);
-    
-    // If we deleted the default resume and there are other resumes, set a new default
-    if (updatedResumes.length > 0 && !updatedResumes.some(r => r.isDefault)) {
-      updatedResumes[0].isDefault = true;
-    }
-    
-    setResumes(updatedResumes);
-    localStorage.setItem("resumes", JSON.stringify(updatedResumes));
-    toast.success("Resume deleted");
-  };
+  const handleUploadResume = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      setResumeContent(content);
+
+      if (activeResumeId) {
+        const updatedResumes = resumes.map((resume) =>
+          resume.id === activeResumeId ? { ...resume, content: content } : resume
+        );
+        saveResumes(updatedResumes);
+        toast.success("Resume uploaded successfully");
+      } else {
+        // If no resume is selected, create a new one
+        const newResume: Resume = {
+          id: Date.now().toString(),
+          name: file.name.replace(".txt", "").replace(".pdf", ""),
+          content: content,
+        };
+        saveResumes([...resumes, newResume]);
+        setActiveResumeId(newResume.id);
+        toast.success("Resume uploaded and created successfully");
+      }
+    };
+    reader.readAsText(file);
   };
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            Upload Resume
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="resume-title">Resume Title</Label>
-            <Input
-              id="resume-title"
-              placeholder="e.g., Software Developer Resume 2023"
-              value={resumeTitle}
-              onChange={(e) => setResumeTitle(e.target.value)}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="resume-file">PDF File</Label>
-            <Input
-              id="resume-file"
-              type="file"
-              accept="application/pdf"
-              onChange={handleFileChange}
-            />
-            {resumeFile && (
-              <p className="text-sm text-muted-foreground">
-                Selected file: {resumeFile.name} ({Math.round(resumeFile.size / 1024)} KB)
-              </p>
-            )}
-          </div>
-          
-          <Button 
-            onClick={handleUploadResume} 
-            className="flex items-center gap-2 w-full md:w-auto mt-2"
-          >
-            <FilePdf className="h-4 w-4" />
-            Upload Resume
-          </Button>
-        </CardContent>
-      </Card>
-      
-      <h3 className="text-xl font-semibold mt-8 mb-4">Manage Your Resumes</h3>
-      
-      {resumes.length === 0 ? (
-        <Card className="p-8 text-center bg-muted/40">
-          <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">You haven't uploaded any resumes yet.</p>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {resumes.map(resume => (
-            <Card key={resume.id}>
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <div className="flex items-center gap-3">
-                    <FilePdf className="h-10 w-10 text-primary" />
-                    <div>
-                      <h4 className="font-semibold text-lg">{resume.title}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Uploaded on {formatDate(resume.uploadDate)}
-                      </p>
-                    </div>
-                    {resume.isDefault && (
-                      <span className="ml-2 bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
-                        Default
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div className="flex gap-2 w-full md:w-auto">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="flex items-center gap-1"
-                      onClick={() => handleDownload(resume)}
-                    >
-                      <Download className="h-4 w-4" />
-                      Download
-                    </Button>
-                    
-                    {!resume.isDefault && (
-                      <Button 
-                        variant="secondary" 
-                        size="sm"
-                        className="flex items-center gap-1"
-                        onClick={() => handleSetDefault(resume.id)}
+      <Tabs defaultValue={activeResumeId ? "edit" : "create"}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="create">Create Resume</TabsTrigger>
+          <TabsTrigger value="edit" disabled={!activeResumeId}>
+            Edit Resume
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="create">
+          <Card className="glass-card">
+            <CardContent className="p-6">
+              <Label htmlFor="resume-name" className="mb-2">
+                New Resume Name
+              </Label>
+              <div className="flex items-center space-x-2">
+                <Input
+                  id="resume-name"
+                  placeholder="e.g., Software Engineer Resume"
+                  value={newResumeName}
+                  onChange={(e) => setNewResumeName(e.target.value)}
+                />
+                <Button onClick={handleCreateResume}>Create</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="edit">
+          <div className="grid grid-cols-4 gap-4">
+            <div className="col-span-1">
+              <Card className="glass-card">
+                <CardContent className="p-4">
+                  <h3 className="font-semibold mb-4">Select Resume</h3>
+                  <div className="space-y-2">
+                    {resumes.map((resume) => (
+                      <Button
+                        key={resume.id}
+                        variant={activeResumeId === resume.id ? "secondary" : "outline"}
+                        className="w-full justify-start"
+                        onClick={() => {
+                          setActiveResumeId(resume.id);
+                          setIsEditing(true);
+                        }}
                       >
-                        Set as Default
+                        {resume.name}
                       </Button>
-                    )}
-                    
-                    <Button 
-                      variant="destructive" 
-                      size="sm"
-                      className="flex items-center gap-1"
-                      onClick={() => handleDelete(resume.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    ))}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="col-span-3">
+              <Card className="glass-card">
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-semibold">
+                      {activeResumeId
+                        ? resumes.find((resume) => resume.id === activeResumeId)?.name
+                        : "No Resume Selected"}
+                    </h3>
+                    <div className="flex space-x-2">
+                      <Button onClick={handleUpdateResume} disabled={!activeResumeId}>
+                        Update
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => activeResumeId && handleDeleteResume(activeResumeId)}
+                        disabled={!activeResumeId}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={handleDownloadResume}
+                        disabled={!activeResumeId}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </Button>
+                    </div>
+                  </div>
+
+                  {activeResumeId ? (
+                    <>
+                      <Label htmlFor="resume-content">Resume Content</Label>
+                      <Textarea
+                        id="resume-content"
+                        value={resumeContent}
+                        onChange={(e) => setResumeContent(e.target.value)}
+                        className="h-96 resize-none"
+                      />
+
+                      <div className="flex items-center space-x-2 mt-4">
+                        <Label htmlFor="upload-resume" className="cursor-pointer">
+                          <Card className="bg-secondary text-secondary-foreground p-3 rounded-md hover:bg-secondary/80 transition-colors">
+                            <div className="flex items-center space-x-2">
+                              <Upload className="h-4 w-4" />
+                              <span>Upload Resume</span>
+                            </div>
+                          </Card>
+                        </Label>
+                        <Input
+                          type="file"
+                          id="upload-resume"
+                          className="hidden"
+                          onChange={handleUploadResume}
+                          accept=".txt, .pdf"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-muted-foreground">Select a resume to edit or create a new one.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

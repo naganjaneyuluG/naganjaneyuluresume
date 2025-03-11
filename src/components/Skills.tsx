@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +18,10 @@ import {
   Cpu,
   Layout,
   Terminal,
-  Monitor
+  Monitor,
+  HardDrive,
+  Shield,
+  Workflow
 } from "lucide-react";
 import { getSkillsData } from "@/utils/localStorage";
 
@@ -40,7 +42,10 @@ const iconMap: Record<string, React.ReactNode> = {
   Cpu: <Cpu className="h-4 w-4" />,
   Layout: <Layout className="h-4 w-4" />,
   Terminal: <Terminal className="h-4 w-4" />,
-  Monitor: <Monitor className="h-4 w-4" />
+  Monitor: <Monitor className="h-4 w-4" />,
+  HardDrive: <HardDrive className="h-4 w-4" />,
+  Shield: <Shield className="h-4 w-4" />,
+  Workflow: <Workflow className="h-4 w-4" />
 };
 
 interface Skill {

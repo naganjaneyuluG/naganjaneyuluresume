@@ -54,7 +54,55 @@ export const getSkillsData = () => {
     "Cloud Skills": [
       { name: "Amazon Web Services (AWS)", level: 95, icon: "Cloud" },
     ],
-    // Add other skill categories as needed
+    "Configuration Management": [
+      { name: "Jenkins", level: 88, icon: "Settings" },
+      { name: "Ansible", level: 85, icon: "Settings" },
+    ],
+    "Monitoring Tools": [
+      { name: "Grafana", level: 90, icon: "Activity" },
+      { name: "Prometheus", level: 92, icon: "Activity" },
+      { name: "Zabbix", level: 82, icon: "Activity" },
+      { name: "Datadog", level: 85, icon: "Activity" },
+      { name: "New Relic", level: 80, icon: "Activity" },
+    ],
+    "CI/CD": [
+      { name: "GitHub Actions", level: 92, icon: "GitBranch" },
+      { name: "Jenkins", level: 90, icon: "Settings" },
+      { name: "Argo CD", level: 85, icon: "GitBranch" },
+      { name: "CircleCI", level: 80, icon: "GitBranch" },
+    ],
+    "Version Control Tools": [
+      { name: "Git", level: 95, icon: "GitBranch" },
+      { name: "GitHub", level: 92, icon: "Github" },
+      { name: "GitLab", level: 88, icon: "Github" },
+    ],
+    "Infrastructure as Code": [
+      { name: "Terraform", level: 90, icon: "Code" },
+      { name: "AWS CDK", level: 85, icon: "Code" },
+    ],
+    "Scanning & Artifactory": [
+      { name: "Frog Artifactory", level: 82, icon: "Package" },
+      { name: "Nexus", level: 80, icon: "Package" },
+      { name: "Sonar", level: 85, icon: "Code" },
+    ],
+    "Containerization Tools": [
+      { name: "Kubernetes-Helm", level: 88, icon: "Server" },
+      { name: "Docker", level: 92, icon: "Package" },
+      { name: "Docker Swarm", level: 80, icon: "Package" },
+    ],
+    "Project Management": [
+      { name: "Jira", level: 90, icon: "Layers" },
+      { name: "Confluence", level: 88, icon: "Layers" },
+    ],
+    "Scripting": [
+      { name: "Shell Scripting", level: 92, icon: "Terminal" },
+    ],
+    "Databases": [
+      { name: "MySQL", level: 85, icon: "Database" },
+      { name: "MariaDB", level: 82, icon: "Database" },
+      { name: "PostgreSQL", level: 88, icon: "Database" },
+      { name: "MongoDB", level: 80, icon: "Database" },
+    ],
   };
 
   try {
