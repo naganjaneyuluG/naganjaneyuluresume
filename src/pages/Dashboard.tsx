@@ -5,7 +5,7 @@ import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { LogOut, Save, PlusCircle, Trash2 } from "lucide-react";
+import { LogOut, Save, PlusCircle, Trash2, Lock } from "lucide-react";
 import { toast } from "sonner";
 import ExperienceEditor from "@/components/dashboard/ExperienceEditor";
 import SkillsEditor from "@/components/dashboard/SkillsEditor";
@@ -13,6 +13,7 @@ import AppearanceSettings from "@/components/dashboard/AppearanceSettings";
 import ResumeManager from "@/components/dashboard/ResumeManager";
 import MeetingScheduler from "@/components/dashboard/MeetingScheduler";
 import EmailSettings from "@/components/dashboard/EmailSettings";
+import PasswordChange from "@/components/dashboard/PasswordChange";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -61,13 +62,14 @@ const Dashboard = () => {
           </div>
           
           <Tabs defaultValue="experience">
-            <TabsList className="grid w-full grid-cols-6 mb-8">
+            <TabsList className="grid w-full grid-cols-7 mb-8">
               <TabsTrigger value="experience">Work Experience</TabsTrigger>
               <TabsTrigger value="skills">Skills</TabsTrigger>
               <TabsTrigger value="appearance">Appearance</TabsTrigger>
               <TabsTrigger value="resume">Resume</TabsTrigger>
               <TabsTrigger value="meetings">Meetings</TabsTrigger>
               <TabsTrigger value="email">Email Settings</TabsTrigger>
+              <TabsTrigger value="password">Password</TabsTrigger>
             </TabsList>
             
             <TabsContent value="experience" className="space-y-4">
@@ -92,6 +94,10 @@ const Dashboard = () => {
 
             <TabsContent value="email" className="space-y-4">
               <EmailSettings />
+            </TabsContent>
+
+            <TabsContent value="password" className="space-y-4">
+              <PasswordChange />
             </TabsContent>
           </Tabs>
         </div>

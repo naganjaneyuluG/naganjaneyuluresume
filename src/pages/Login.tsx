@@ -11,7 +11,6 @@ import { toast } from "sonner";
 
 // Demo credentials
 const DEMO_EMAIL = "admin@example.com";
-const DEMO_PASSWORD = "admin123";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -25,8 +24,11 @@ const Login = () => {
     setIsLoading(true);
     
     try {
+      // Get the stored password or use the default if none exists
+      const storedPassword = localStorage.getItem("demoPassword") || "admin123";
+      
       // Simple credential validation
-      if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
+      if (email === DEMO_EMAIL && password === storedPassword) {
         // Set user as logged in
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("user", JSON.stringify({ email, name: "Admin" }));
@@ -42,7 +44,7 @@ const Login = () => {
       }
     } catch (error) {
       toast.error("Login failed", {
-        description: "Please use the demo credentials: admin@example.com / admin123"
+        description: "Please use the correct credentials"
       });
     } finally {
       setIsLoading(false);
@@ -62,7 +64,9 @@ const Login = () => {
               <div className="mt-4 p-3 bg-muted/50 rounded-md">
                 <p className="text-sm font-medium">Demo Credentials</p>
                 <p className="text-xs text-muted-foreground">Email: admin@example.com</p>
-                <p className="text-xs text-muted-foreground">Password: admin123</p>
+                <p className="text-xs text-muted-foreground">
+                  Password: {localStorage.getItem("demoPassword") ? "Changed from default" : "admin123"}
+                </p>
               </div>
             </div>
             
