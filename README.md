@@ -1,20 +1,4 @@
 
-
-
-```
-Dashboard URL
-The dashboard is accessible at the /dashboard URL after you log in. Here's how the routing works:
-
-Homepage: /
-Dashboard: /dashboard
-Login: /login
-Register: /register
-Default Username and Password
-For development and testing, you can use these demo credentials:
-
-Username/Email: admin@example.com
-Password: admin123
-```
 # DevOps Portfolio Application with Supabase Backend
 
 This application is a DevOps professional portfolio with a Supabase backend for authentication and data storage.
@@ -34,6 +18,23 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 2. Use the SQL Editor in the Supabase dashboard to run the schema.sql file located in the supabase directory
 3. This will create all necessary tables and security policies
 
+## Initial Data Setup
+
+After creating your account, you should add some initial skill categories. The application includes the following suggested DevOps skill categories:
+
+- Operating Systems (Red Hat Linux, Amazon Linux, Rocky Linux, Ubuntu, CentOS, Linux)
+- Cloud Skills (Amazon Web Services (AWS))
+- Configuration Management (Jenkins, Ansible)
+- Monitoring Tools (Grafana, Prometheus, Zabbix, Datadog, New Relic)
+- CI/CD (GitHub Actions, Jenkins, Argo CD, CircleCI)
+- Version Control Tools (Git, GitHub, GitLab)
+- Infrastructure as Code (IAC) (Terraform, AWS CDK)
+- Scanning & Artifactory (Frog Artifactory, Nexus, Sonar)
+- Containerization Tools (Kubernetes-Helm, Docker, Docker Swarm)
+- Project Management (Jira, Confluence)
+- Scripting (Shell Scripting)
+- Databases (MySQL, MariaDB, PostgreSQL, MongoDB)
+
 ## Local Development
 
 ```bash
@@ -44,22 +45,21 @@ npm install
 npm run dev
 ```
 
-## Skills Categories
+## Dashboard URL
 
-The application includes the following DevOps skill categories:
+The dashboard is accessible at the `/dashboard` URL after you log in. Here's how the routing works:
 
-- Operating Systems: Red Hat Linux, Amazon Linux, Rocky Linux, Ubuntu, CentOS, Linux
-- Cloud Skills: Amazon Web Services (AWS)
-- Configuration Management: Jenkins, Ansible
-- Monitoring Tools: Grafana, Prometheus, Zabbix, Datadog, New Relic
-- CI/CD: GitHub Actions, Jenkins, Argo CD, CircleCI
-- Version Control Tools: Git, GitHub, GitLab
-- Infrastructure as Code (IAC): Terraform, AWS CDK
-- Scanning & Artifactory: Frog Artifactory, Nexus, Sonar
-- Containerization Tools: Kubernetes-Helm, Docker, Docker Swarm
-- Project Management: Jira, Confluence
-- Scripting: Shell Scripting
-- Databases: MySQL, MariaDB, PostgreSQL, MongoDB
+- Homepage: `/`
+- Dashboard: `/dashboard`
+- Login: `/login`
+- Register: `/register`
+
+## Default Username and Password
+
+For development and testing, you can use these demo credentials:
+
+- Username/Email: admin@example.com
+- Password: admin123
 
 ## Features
 
@@ -69,6 +69,7 @@ The application includes the following DevOps skill categories:
 - Resume management
 - Appearance customization
 - Contact form and meeting scheduler
+- Email settings management
 
 ## Deployment
 

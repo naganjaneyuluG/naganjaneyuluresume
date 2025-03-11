@@ -58,12 +58,22 @@ CREATE TABLE IF NOT EXISTS public.appearance_settings (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
+-- Create email settings table
+CREATE TABLE IF NOT EXISTS public.email_settings (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  settings JSONB DEFAULT '{"host":"","port":"","username":"","password":"","fromEmail":"","fromName":"","secure":false,"enabled":false}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
 -- Set up Row Level Security (RLS)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.experiences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.skill_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.appearance_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.email_settings ENABLE ROW LEVEL SECURITY;
 
 -- Create policies
 -- Profiles policies
@@ -122,18 +132,15 @@ CREATE POLICY "Users can create their own appearance settings"
 CREATE POLICY "Users can update their own appearance settings" 
   ON public.appearance_settings FOR UPDATE USING (auth.uid() = user_id);
 
--- Initial seed data for skill categories with default DevOps skills
-INSERT INTO public.skill_categories (id, user_id, name)
-VALUES 
-  (uuid_generate_v4(), '00000000-0000-0000-0000-000000000000', 'Operating Systems'),
-  (uuid_generate_v4(), '00000000-0000-0000-0000-000000000000', 'Cloud Skills'),
-  (uuid_generate_v4(), '00000000-0000-0000-0000-000000000000', 'Configuration Management'),
-  (uuid_generate_v4(), '00000000-0000-0000-0000-000000000000', 'Monitoring Tools'),
-  (uuid_generate_v4(), '00000000-0000-0000-0000-000000000000', 'CI/CD'),
-  (uuid_generate_v4(), '00000000-0000-0000-0000-000000000000', 'Version Control Tools'),
-  (uuid_generate_v4(), '00000000-0000-0000-0000-000000000000', 'Infrastructure as Code'),
-  (uuid_generate_v4(), '00000000-0000-0000-0000-000000000000', 'Scanning & Artifactory'),
-  (uuid_generate_v4(), '00000000-0000-0000-0000-000000000000', 'Containerization Tools'),
-  (uuid_generate_v4(), '00000000-0000-0000-0000-000000000000', 'Project Management'),
-  (uuid_generate_v4(), '00000000-0000-0000-0000-000000000000', 'Scripting'),
-  (uuid_generate_v4(), '00000000-0000-0000-0000-000000000000', 'Databases');
+-- Email settings policies
+CREATE POLICY "Email settings are viewable by owner" 
+  ON public.email_settings FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create their own email settings" 
+  ON public.email_settings FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own email settings" 
+  ON public.email_settings FOR UPDATE USING (auth.uid() = user_id);
+
+-- NOTE: We've removed the default skill category seed data with the invalid user_id.
+-- Instead, let users create their own categories after registration.
