@@ -1,4 +1,20 @@
 
+
+
+```
+Dashboard URL
+The dashboard is accessible at the /dashboard URL after you log in. Here's how the routing works:
+
+Homepage: /
+Dashboard: /dashboard
+Login: /login
+Register: /register
+Default Username and Password
+For development and testing, you can use these demo credentials:
+
+Username/Email: admin@example.com
+Password: admin123
+```
 # DevOps Portfolio Application with Supabase Backend
 
 This application is a DevOps professional portfolio with a Supabase backend for authentication and data storage.
