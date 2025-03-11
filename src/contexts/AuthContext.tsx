@@ -20,22 +20,32 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  console.log("AuthProvider initializing");
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("AuthProvider useEffect running");
+    
     // Check for session on initial load
     const getSession = async () => {
+      console.log("Checking for existing session");
       try {
         const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
+        if (error) {
+          console.error("Error getting session:", error);
+          throw error;
+        }
+        
+        console.log("Session data received:", data.session ? "Session exists" : "No session");
         setSession(data.session);
         setUser(data.session?.user ?? null);
       } catch (error) {
         console.error("Error getting session:", error);
       } finally {
+        console.log("Setting loading to false");
         setLoading(false);
       }
     };
@@ -43,8 +53,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     getSession();
 
     // Listen for auth changes
+    console.log("Setting up auth state change listener");
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        console.log("Auth state changed:", event);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -52,13 +64,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     return () => {
+      console.log("Unsubscribing from auth listener");
       authListener.subscription.unsubscribe();
     };
   }, []);
 
   const signOut = async () => {
+    console.log("Signing out user");
     try {
       await supabase.auth.signOut();
+      console.log("Sign out successful");
       toast.success("Logged out successfully");
       navigate("/login");
     } catch (error) {
@@ -67,6 +82,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  console.log("AuthProvider rendering, loading state:", loading);
+  
   return (
     <AuthContext.Provider value={{ session, user, loading, signOut }}>
       {children}
