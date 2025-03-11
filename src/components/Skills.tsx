@@ -1,7 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import logger from "@/utils/logger";
 import {
   Server,
   Cloud,
@@ -63,24 +65,37 @@ const Skills = () => {
   const [skillsData, setSkillsData] = useState<SkillsData>({});
 
   useEffect(() => {
-    // Load skills data from localStorage
-    const loadedData = getSkillsData();
-    setSkillsData(loadedData);
-    
-    // Set first category as active
-    if (Object.keys(loadedData).length > 0) {
-      setActiveCategory(Object.keys(loadedData)[0]);
-    }
+    logger.group("Skills Component", () => {
+      // Load skills data from localStorage
+      const loadedData = getSkillsData();
+      logger.info("Loaded skills data:", loadedData);
+      logger.info("Number of categories:", Object.keys(loadedData).length);
+      logger.info("Categories:", Object.keys(loadedData));
+      
+      setSkillsData(loadedData);
+      
+      // Set first category as active
+      if (Object.keys(loadedData).length > 0) {
+        const firstCategory = Object.keys(loadedData)[0];
+        logger.info("Setting active category to:", firstCategory);
+        setActiveCategory(firstCategory);
+      }
+    });
   }, []);
 
   // Helper function to get icon component
   const getIconComponent = (iconName: string) => {
+    logger.debug("Getting icon for:", iconName);
     return iconMap[iconName] || <Code className="h-4 w-4" />;
   };
 
   if (Object.keys(skillsData).length === 0) {
+    logger.warn("No skills data found");
     return <div>Loading skills...</div>;
   }
+
+  logger.info("Rendering Skills component with active category:", activeCategory);
+  logger.debug("Current skills in active category:", skillsData[activeCategory]);
 
   return (
     <section id="skills" className="section bg-gray-50 dark:bg-gray-900/50">
@@ -161,3 +176,4 @@ const Skills = () => {
 };
 
 export default Skills;
+
