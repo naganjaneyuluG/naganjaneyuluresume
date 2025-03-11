@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -21,72 +21,61 @@ import {
   Terminal,
   Monitor
 } from "lucide-react";
+import { getSkillsData } from "@/utils/localStorage";
 
-const skillsData = {
-  "Operating Systems": [
-    { name: "Red Hat Linux", level: 90, icon: <Server className="h-4 w-4" /> },
-    { name: "Amazon Linux", level: 92, icon: <Cloud className="h-4 w-4" /> },
-    { name: "Rocky Linux", level: 85, icon: <Server className="h-4 w-4" /> },
-    { name: "Ubuntu", level: 95, icon: <Server className="h-4 w-4" /> },
-    { name: "CentOS", level: 88, icon: <Server className="h-4 w-4" /> },
-    { name: "Linux", level: 95, icon: <Terminal className="h-4 w-4" /> },
-  ],
-  "Cloud Skills": [
-    { name: "Amazon Web Services (AWS)", level: 95, icon: <Cloud className="h-4 w-4" /> },
-  ],
-  "Configuration Management": [
-    { name: "Jenkins", level: 92, icon: <Settings className="h-4 w-4" /> },
-    { name: "Ansible", level: 90, icon: <Puzzle className="h-4 w-4" /> },
-  ],
-  "Monitoring Tools": [
-    { name: "Grafana", level: 88, icon: <Activity className="h-4 w-4" /> },
-    { name: "Prometheus", level: 90, icon: <Activity className="h-4 w-4" /> },
-    { name: "Zabbix", level: 85, icon: <Activity className="h-4 w-4" /> },
-    { name: "Datadog", level: 88, icon: <Activity className="h-4 w-4" /> },
-    { name: "New Relic", level: 85, icon: <Activity className="h-4 w-4" /> },
-  ],
-  "CI/CD": [
-    { name: "GitHub Actions", level: 92, icon: <Github className="h-4 w-4" /> },
-    { name: "Jenkins", level: 95, icon: <Settings className="h-4 w-4" /> },
-    { name: "Argo CD", level: 90, icon: <GitBranch className="h-4 w-4" /> },
-    { name: "CircleCI", level: 88, icon: <GitBranch className="h-4 w-4" /> },
-  ],
-  "Version Control Tools": [
-    { name: "Git", level: 95, icon: <GitBranch className="h-4 w-4" /> },
-    { name: "GitHub", level: 95, icon: <Github className="h-4 w-4" /> },
-    { name: "GitLab", level: 90, icon: <GitBranch className="h-4 w-4" /> },
-  ],
-  "IAC": [
-    { name: "Terraform", level: 95, icon: <Layers className="h-4 w-4" /> },
-    { name: "AWS CDK", level: 90, icon: <Cloud className="h-4 w-4" /> },
-  ],
-  "Scanning & Artifactory": [
-    { name: "Frog Artifactory", level: 85, icon: <Package className="h-4 w-4" /> },
-    { name: "Nexus", level: 88, icon: <Package className="h-4 w-4" /> },
-    { name: "Sonar", level: 90, icon: <Code className="h-4 w-4" /> },
-  ],
-  "Containerization Tools": [
-    { name: "Kubernetes-Helm", level: 92, icon: <Cpu className="h-4 w-4" /> },
-    { name: "Docker", level: 95, icon: <Layers className="h-4 w-4" /> },
-    { name: "Docker Swarm", level: 88, icon: <Layers className="h-4 w-4" /> },
-  ],
-  "Project Management": [
-    { name: "Jira", level: 90, icon: <Layout className="h-4 w-4" /> },
-    { name: "Confluence", level: 88, icon: <FileCode className="h-4 w-4" /> },
-  ],
-  "Scripting": [
-    { name: "Shell Scripting", level: 95, icon: <Terminal className="h-4 w-4" /> },
-  ],
-  "Databases": [
-    { name: "MySQL", level: 88, icon: <Database className="h-4 w-4" /> },
-    { name: "MariaDB", level: 85, icon: <Database className="h-4 w-4" /> },
-    { name: "PostgreSQL", level: 88, icon: <Database className="h-4 w-4" /> },
-    { name: "MongoDB", level: 85, icon: <Database className="h-4 w-4" /> },
-  ],
+// Map for icon components
+const iconMap: Record<string, React.ReactNode> = {
+  Server: <Server className="h-4 w-4" />,
+  Cloud: <Cloud className="h-4 w-4" />,
+  Settings: <Settings className="h-4 w-4" />,
+  Activity: <Activity className="h-4 w-4" />,
+  GitBranch: <GitBranch className="h-4 w-4" />,
+  Github: <Github className="h-4 w-4" />,
+  Code: <Code className="h-4 w-4" />,
+  Package: <Package className="h-4 w-4" />,
+  Database: <Database className="h-4 w-4" />,
+  FileCode: <FileCode className="h-4 w-4" />,
+  Puzzle: <Puzzle className="h-4 w-4" />,
+  Layers: <Layers className="h-4 w-4" />,
+  Cpu: <Cpu className="h-4 w-4" />,
+  Layout: <Layout className="h-4 w-4" />,
+  Terminal: <Terminal className="h-4 w-4" />,
+  Monitor: <Monitor className="h-4 w-4" />
 };
 
+interface Skill {
+  name: string;
+  level: number;
+  icon: string;
+}
+
+interface SkillsData {
+  [category: string]: Skill[];
+}
+
 const Skills = () => {
-  const [activeCategory, setActiveCategory] = useState("Operating Systems");
+  const [activeCategory, setActiveCategory] = useState<string>("");
+  const [skillsData, setSkillsData] = useState<SkillsData>({});
+
+  useEffect(() => {
+    // Load skills data from localStorage
+    const loadedData = getSkillsData();
+    setSkillsData(loadedData);
+    
+    // Set first category as active
+    if (Object.keys(loadedData).length > 0) {
+      setActiveCategory(Object.keys(loadedData)[0]);
+    }
+  }, []);
+
+  // Helper function to get icon component
+  const getIconComponent = (iconName: string) => {
+    return iconMap[iconName] || <Code className="h-4 w-4" />;
+  };
+
+  if (Object.keys(skillsData).length === 0) {
+    return <div>Loading skills...</div>;
+  }
 
   return (
     <section id="skills" className="section bg-gray-50 dark:bg-gray-900/50">
@@ -116,7 +105,9 @@ const Skills = () => {
                             : "hover:bg-gray-100 dark:hover:bg-gray-800"
                         )}
                       >
-                        {skillsData[category as keyof typeof skillsData][0].icon}
+                        {skillsData[category][0] ? 
+                          getIconComponent(skillsData[category][0].icon) : 
+                          <Code className="h-4 w-4" />}
                         {category}
                       </button>
                     </li>
@@ -131,7 +122,7 @@ const Skills = () => {
               <CardContent className="p-6">
                 <h3 className="font-semibold mb-6 text-xl">{activeCategory}</h3>
                 <div className="space-y-6">
-                  {skillsData[activeCategory as keyof typeof skillsData].map((skill, index) => (
+                  {skillsData[activeCategory]?.map((skill, index) => (
                     <div
                       key={skill.name}
                       className="animate-fade-in"
@@ -139,7 +130,7 @@ const Skills = () => {
                     >
                       <div className="flex justify-between mb-1">
                         <span className="font-medium flex items-center gap-2">
-                          {skill.icon}
+                          {getIconComponent(skill.icon)}
                           {skill.name}
                         </span>
                         <Badge variant="secondary" className="text-xs">

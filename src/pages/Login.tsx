@@ -6,34 +6,43 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+
+// Demo credentials
+const DEMO_EMAIL = "admin@example.com";
+const DEMO_PASSWORD = "admin123";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      // Simulate login - replace with actual authentication when backend is ready
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo purposes - show success toast
-      toast.success("Login successful!", {
-        description: "Welcome back to your account."
-      });
-      
-      // Reset form
-      setEmail("");
-      setPassword("");
+      // Simple credential validation
+      if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
+        // Set user as logged in
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("user", JSON.stringify({ email, name: "Admin" }));
+        
+        toast.success("Login successful!", {
+          description: "Welcome to your dashboard."
+        });
+        
+        // Navigate to dashboard
+        navigate("/dashboard");
+      } else {
+        throw new Error("Invalid credentials");
+      }
     } catch (error) {
       toast.error("Login failed", {
-        description: "Please check your credentials and try again."
+        description: "Please use the demo credentials: admin@example.com / admin123"
       });
     } finally {
       setIsLoading(false);
@@ -50,6 +59,11 @@ const Login = () => {
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold">Welcome Back</h1>
               <p className="text-muted-foreground mt-2">Sign in to your account</p>
+              <div className="mt-4 p-3 bg-muted/50 rounded-md">
+                <p className="text-sm font-medium">Demo Credentials</p>
+                <p className="text-xs text-muted-foreground">Email: admin@example.com</p>
+                <p className="text-xs text-muted-foreground">Password: admin123</p>
+              </div>
             </div>
             
             <form onSubmit={handleLogin} className="space-y-6">

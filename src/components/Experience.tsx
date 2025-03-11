@@ -1,36 +1,28 @@
 
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { getExperiences } from "@/utils/localStorage";
 
-const experiences = [
-  {
-    title: "Senior DevOps Engineer",
-    company: "TechGlobe Solutions",
-    period: "2021 - Present",
-    description: "Leading cloud infrastructure architecture and CI/CD pipeline development for enterprise clients. Reduced deployment time by 70% and achieved 99.99% uptime across all systems.",
-    technologies: ["AWS", "Kubernetes", "Terraform", "Jenkins", "Prometheus"],
-    highlight: true,
-  },
-  {
-    title: "Cloud Infrastructure Engineer",
-    company: "Innovate Systems Inc.",
-    period: "2018 - 2021",
-    description: "Designed and implemented multi-region cloud architecture on GCP. Managed migration of legacy applications to containerized microservices architecture.",
-    technologies: ["GCP", "Docker", "Kubernetes", "GitLab CI", "Terraform"],
-    highlight: false,
-  },
-  {
-    title: "DevOps Specialist",
-    company: "DataFlow Technologies",
-    period: "2016 - 2018",
-    description: "Implemented CI/CD pipelines and automated infrastructure deployment processes. Reduced infrastructure costs by 35% through optimization.",
-    technologies: ["AWS", "Docker", "CloudFormation", "Jenkins", "ELK Stack"],
-    highlight: false,
-  },
-];
+interface Experience {
+  id: string;
+  title: string;
+  company: string;
+  period: string;
+  description: string;
+  technologies: string[];
+  highlight: boolean;
+}
 
 const Experience = () => {
+  const [experiences, setExperiences] = useState<Experience[]>([]);
+
+  useEffect(() => {
+    // Load experiences from localStorage
+    setExperiences(getExperiences());
+  }, []);
+
   return (
     <section className="section">
       <div className="container-tight">
