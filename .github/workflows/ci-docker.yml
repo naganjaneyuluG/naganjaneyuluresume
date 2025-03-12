@@ -1,0 +1,61 @@
+name: Docker Build and Trivy Vulnerability Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  docker-build-and-scan:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository code
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      # Build Docker Image
+      - name: Docker Build
+        env:
+          IMAGE_NAME: my-ecr-repository-name    # Dummy ECR repository name
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          set -euxo pipefail
+          DOCKER_IMAGE=${IMAGE_NAME}:${IMAGE_TAG}
+          docker build -t ${DOCKER_IMAGE} .
+
+      # Run Trivy vulnerability scanner for npm dependencies
+      - name: Run Trivy vulnerability scanner for npm dependencies
+        id: trivy-scan-npm
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}'
+          scan-type: config
+          hide-progress: true
+          format: 'table'
+          vuln-type: 'library,os'
+          exit-code: '0'
+          ignore-unfixed: false
+          severity: 'HIGH,CRITICAL'
+          output: trivy.txt
+        env:
+          IMAGE_NAME: my-ecr-repository-name    # Dummy ECR repository name
+          IMAGE_TAG: ${{ github.sha }}
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
+
+      # Publish Trivy Output to Summary
+      - name: Publish Trivy Output to Summary
+        run: |
+          if [[ -s trivy.txt ]]; then
+              {
+                  echo "### Docker Security Output"
+                  echo "<details><summary>Click to expand</summary>"
+                  echo ""
+                  echo '```output'
+                  cat trivy.txt
+                  echo '```'
+                  echo "</details>"
+              } >> $GITHUB_STEP_SUMMARY
+          fi
