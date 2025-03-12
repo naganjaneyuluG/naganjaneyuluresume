@@ -25,14 +25,15 @@ jobs:
           set -euxo pipefail
           DOCKER_IMAGE=${IMAGE_NAME}:${IMAGE_TAG}
           docker build -t ${DOCKER_IMAGE} .
+          docker images  # List images to confirm that the image is built
 
-      # Run Trivy vulnerability scanner for npm dependencies
-      - name: Run Trivy vulnerability scanner for npm dependencies
+      # Run Trivy vulnerability scanner for Docker image
+      - name: Run Trivy vulnerability scanner for Docker image
         id: trivy-scan-npm
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: '${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}'
-          scan-type: config
+          scan-type: image   # Scan the Docker image for vulnerabilities
           hide-progress: true
           format: 'table'
           vuln-type: 'library,os'
