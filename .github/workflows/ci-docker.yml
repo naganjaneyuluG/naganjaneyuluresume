@@ -67,12 +67,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           
-      # Run Docker Scout for CVE scanning and recommendations
+      # Run Docker Scout for CVE scanning and 
       - name: Docker Scout Scan
         id: docker-scout
         uses: docker/scout-action@v1
         with:
-          command: cves,recommendations,compare
+          command: cves,recommendations,sbom,environment,quickview
           to-latest: true
           ignore-base: true
           ignore-unchanged: true
