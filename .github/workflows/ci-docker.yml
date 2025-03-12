@@ -34,7 +34,7 @@ jobs:
         with:
           image-ref: '${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}'
           scan-type: image   # Scan the Docker image for vulnerabilities
-          hide-progress: true
+          hide-progress: false
           format: 'table'
           vuln-type: 'library,os'
           exit-code: '0'
