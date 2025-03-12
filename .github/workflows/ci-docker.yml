@@ -72,7 +72,7 @@ jobs:
         id: docker-scout
         uses: docker/scout-action@v1
         with:
-          command: cves,recommendations,sbom,environment,quickview
+          command: cves,recommendations,sbom,quickview
           to-latest: true
           ignore-base: true
           ignore-unchanged: true
