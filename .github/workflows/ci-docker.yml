@@ -60,3 +60,17 @@ jobs:
                   echo "</details>"
               } >> $GITHUB_STEP_SUMMARY
           fi
+
+      # Run Docker Scout for CVE scanning and recommendations
+      - name: Docker Scout Scan
+        id: docker-scout
+        uses: docker/scout-action@v1
+        with:
+          command: cves,recommendations,compare
+          to-latest: true
+          ignore-base: true
+          ignore-unchanged: true
+          only-fixed: true
+        env:
+          IMAGE_NAME: my-ecr-repository-name    # Dummy ECR repository name
+          IMAGE_TAG: ${{ github.sha }}
